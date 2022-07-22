@@ -19,14 +19,17 @@ def prompt_timestamp():
 
     if not new_timestamp:
         timestamp = None
+        return
 
     if new_timestamp.isnumeric():
         timestamp = int(new_timestamp)
+        return
 
     found = re.compile("(\d+), ?(\d+)").findall(new_timestamp)
     if found:
         secs, inc = found[0]
         timestamp = (int(secs) << 32) + int(inc)
+        return
 
     print("Unable to interpret timestamp", new_timestamp)
 
@@ -181,15 +184,10 @@ def explore_index(entry, index, position):
                 if not ksdecode_path:
                     return
 
-                def get_rid_type():
-                    if index == "_id_":
-                        return "none"
-                    elif "clusteredIndex" in entry["md"]["options"]:
-                        return "string"
-                    else:
-                        return "long"
+                if index == "_id_":
+                    key += value[:4]
+                    value = value[-2:]
 
-                rid_type = get_rid_type()
                 ksdecode = subprocess.run(
                     [
                         ksdecode_path,
@@ -200,7 +198,9 @@ def explore_index(entry, index, position):
                         "-t",
                         value,
                         "-r",
-                        rid_type,
+                        "string"
+                        if "clusteredIndex" in entry["md"]["options"]
+                        else "long",
                         key,
                     ],
                     capture_output=True,
