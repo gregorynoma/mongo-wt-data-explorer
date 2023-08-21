@@ -303,6 +303,7 @@ while True:
         print(timestamp_msg)
     print("*" * header_width)
     print("(d) dump catalog")
+    print("(s) size storer")
     print("(t) timestamp change")
     print("(q) quit")
 
@@ -313,6 +314,13 @@ while True:
 
     if cmd == "d":
         dump_write("_mdb_catalog", decode_value=format_to_bson)
+
+    if cmd == "s":
+        dump_write(
+            "sizeStorer",
+            decode_key=lambda key: binascii.a2b_hex(key).decode(),
+            decode_value=format_to_bson,
+        )
 
     elif cmd == "t":
         old_timestamp = timestamp
